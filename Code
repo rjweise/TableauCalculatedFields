@@ -1,0 +1,15 @@
+Datasource: Live_YahooFantasyLeagueSkaters (Yahoo_LeftWingLock_FantasyHockeyGeek)
+Field: Position
+Script: 
+  IF LEFT([Pos],7)="C,LW,RW" THEN "C,LW,RW"
+  ELSEIF LEFT([Pos],7)="LW,RW,D" THEN "LW,RW,D"
+  ELSEIF LEFT([Pos],5)="LW,RW" THEN "LW,RW"
+  ELSEIF LEFT([Pos],4)="C,LW" THEN "C,LW"
+  ELSEIF LEFT([Pos],4)="C,RW" THEN "C,RW"
+  ELSEIF LEFT([Pos],2)="RW" THEN "RW"
+  ELSEIF LEFT([Pos],2)="LW" THEN "LW"
+  ELSEIF LEFT([Pos],1)="D" THEN "D"
+  ELSEIF LEFT([Pos],1)="C" THEN "C"
+  ELSE "X"
+  END
+
