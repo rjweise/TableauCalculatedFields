@@ -13,3 +13,60 @@ Script:
   ELSE "X"
   END
 
+
+
+Data source: PBP_games_201819_g1_g214 (play by play files from NHL, used for PP efficiency
+Field: C_PenMinutes
+Purpose: Giving penalty minutes if data not available in Even Minutes or Event Severity; read penalty info from desription and assign penalty minutes based on 2018-2019 NHL rule book.
+Note: when rules allow for referee discretion to assing 2, 5 or 10 minutes, I assumed 2 minutes
+Script:
+IF [Event] = "Penalty" THEN
+    IF [Event Minutes] <> "NA" THEN [Event Minutes]
+    ELSEIF [Event Severity] <> "NA" THEN [Event Severity]
+    ELSEIF CONTAINS([Event Description],"Too many men") = TRUE THEN "2" //IF description is too many men, then 2
+    ELSEIF [Event Secondary (group)] = "Minor" THEN "2"
+    ELSEIF [Event Secondary (group)] = "Minor*" THEN "2"
+    ELSEIF [Event Secondary (group)] = "Major" THEN "5"
+    ELSEIF [Event Secondary (group)] = "Game misconduct" THEN "0"
+    ELSEIF [Event Secondary (group)] = "Double minor" THEN "4"
+    ELSEIF [Event Secondary (group)] = "Minor, major, 10min misconduct" THEN "2"
+    ELSEIF [Event Secondary (group)] = "Match penalty" THEN "5"
+    ELSEIF [Event Secondary (group)] = "Misconduct" THEN "0"
+    ELSEIF [Event Secondary (group)] = "Penalty shot no penalty min" THEN "0"
+ 
+    //LEFT([Event Description], FIND([Event Description], " against ")) //IF description contains against then use full text to left
+    END
+    
+ELSE "0"
+END
+
+
+
+Data source: PBP_games_201819_g1_g214 (play by play files from NHL, used for PP efficiency
+Field: C_PenSecsFull
+Purpose: Converts values from script above into seconds
+Script:
+INT([C_PenMinutes]) * 60
+
+
+
+Data source: PBP_games_201819_g1_g214 (play by play files from NHL, used for PP efficiency
+Field: C_EventStartSec
+Purpose: Start of any event, in game seconds. Not including OT period
+Script:
+IF [Period] = 1 THEN INT(LEFT([Period Time],2)) * 60 + INT(MID([Period Time],4,2))
+ELSEIF [Period] = 2 THEN INT(LEFT([Period Time],2)) * 60 + INT(MID([Period Time],4,2)) + (20 * 60)
+ELSEIF [Period] = 3 THEN INT(LEFT([Period Time],2)) * 60 + INT(MID([Period Time],4,2)) + (40 * 60)
+//ELSE 99999
+END
+
+
+
+Data source: PBP_games_201819_g1_g214 (play by play files from NHL, used for PP efficiency
+Field: C_EventEndSec
+Purpose: End of penalty event (if not interrupted by goal), in game seconds. Not including OT period
+Script:
+IF [Event] = "Penalty" THEN [C_EventStartSec] + [C_PenSecsFull] ELSE [C_EventStartSec] END
+
+
+
